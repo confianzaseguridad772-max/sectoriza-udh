@@ -113,12 +113,12 @@
   <main class="max-w-7xl mx-auto px-3 sm:px-6 pt-5 space-y-5">
     <div id="statusAlert" class="hidden p-4 rounded-2xl text-xs sm:text-sm font-semibold transition-all shadow-md border no-print"></div>
 
-    <!-- PASO 1: FICHA FAMILIAR, UBICACIÓN Y GEORREFERENCIA MASIVA -->
+    <!-- PASO 1: DATOS FAMILIARES -->
     <div class="glass-card rounded-2xl shadow-sm border border-slate-200/80 p-4 sm:p-6 space-y-4">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
         <h2 class="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
           <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 text-blue-700 text-xs font-black">1</span>
-          Ficha Familiar, Ubicación y Georreferencia Masiva
+          DATOS FAMILIARES
         </h2>
         <div class="flex items-center gap-2">
           <button type="button" onclick="nuevaConsultaFicha()" 
@@ -162,7 +162,7 @@
 
               <button type="button" id="btnGpsTodos" onclick="actualizarGpsTodosIntegrantes()"
                 class="flex-1 sm:flex-none px-3.5 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition shadow-sm">
-                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Aplicar a Familia
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Aplicar GPS a toda la Familia
               </button>
             </div>
           </div>
@@ -172,7 +172,7 @@
       <!-- SECTOR, REF DIRECCIÓN Y MZ PARA LA FAMILIA -->
       <div class="bg-slate-50/80 p-3.5 sm:p-4 rounded-xl border border-slate-200/60 space-y-3">
         <span class="text-[11px] font-extrabold text-blue-900 uppercase tracking-wider flex items-center gap-1.5">
-          <i data-lucide="map" class="w-4 h-4 text-blue-600 no-print"></i> Asignación Masiva de Dirección
+          <i data-lucide="map" class="w-4 h-4 text-blue-600 no-print"></i> Dirección
         </span>
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
@@ -206,7 +206,7 @@
         <div class="flex justify-end pt-1 no-print">
           <button type="button" id="btnDireccionTodos" onclick="actualizarDireccionTodosIntegrantes()"
             class="w-full sm:w-auto px-4 py-2 bg-blue-800 hover:bg-blue-900 active:scale-95 text-white rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition shadow-sm">
-            <i data-lucide="check-check" class="w-4 h-4"></i> Asignar Sector, Ref y Mz a Todos los DNI
+            <i data-lucide="check-check" class="w-4 h-4"></i> Actualizar Sector, Ref y Mz a todos
           </button>
         </div>
       </div>
@@ -219,7 +219,7 @@
       </h3>
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-center">
         <div class="p-2 bg-blue-50 rounded-xl border border-blue-100">
-          <span class="block text-[10px] font-bold text-blue-700 uppercase">Niños (<12a)</span>
+          <span class="block text-[10px] font-bold text-blue-700 uppercase">Niños (0 a 11a)</span>
           <span id="cantNinos" class="text-base font-extrabold text-blue-900 font-mono">0</span>
         </div>
         <div class="p-2 bg-teal-50 rounded-xl border border-teal-100">
@@ -513,7 +513,7 @@
       "933-COMUNIDAD MOYANO", "933-COMUNIDAD NUEVA ALTURA", "933-COMUNIDAD PACHACUTEC",
       "933-COMUNIDAD PAPAYAL", "933-COMUNIDAD PICUROYACU", "933-COMUNIDAD SANTA ROSA DE CASTILLA",
       "933-COMUNIDAD SHAMIRO", "933-COMUNIDAD SINCHI ROCCA", "933-COMUNIDAD VENADO PAMPA",
-      "933-COMUNIDAD YURIMAGUAS", "933-SIN SECTOR"
+      "933-COMUNIDAD YURIMAGUAS", "933-SIN SECTOR", "933-OTRO DISTRITO"
     ];
 
     let idInputSectorDestino = '';
