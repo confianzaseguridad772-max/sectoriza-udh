@@ -3,10 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sistema SIGIS_FED - Registro de Salud</title>
-  <!-- Tailwind CSS CDN para estilos modernos y responsivos -->
+  <title>Registro Familiar</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Iconos Lucide -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     .loader {
@@ -21,244 +19,760 @@
 </head>
 <body class="bg-slate-100 min-h-screen pb-12 font-sans text-slate-800">
 
-  <!-- Encabezado -->
   <header class="bg-blue-700 text-white shadow-lg mb-6">
-    <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
       <div class="flex items-center space-x-3">
-        <i data-lucide="activity" class="w-8 h-8"></i>
+        <i data-lucide="users" class="w-8 h-8"></i>
         <div>
-          <h1 class="text-xl font-bold leading-tight">SIGIS_FED - Censo de Salud</h1>
-          <p class="text-xs text-blue-200">Centro de Salud - Captura e Integración</p>
+          <h1 class="text-xl font-bold leading-tight">Ficha Familiar</h1>
+          <p class="text-xs text-blue-200">Salud Comunitaria</p>
         </div>
       </div>
-      <span class="bg-blue-800 text-xs px-2.5 py-1 rounded-full text-blue-100 font-medium">GitHub Edition</span>
+      <span class="bg-blue-800 text-xs px-2.5 py-1 rounded-full text-blue-100 font-medium">FICHA FAMILIAR</span>
     </div>
   </header>
 
-  <main class="max-w-4xl mx-auto px-4">
-    <!-- Mensajes de Notificación -->
-    <div id="statusAlert" class="hidden mb-4 p-4 rounded-lg text-sm font-medium transition-all shadow-sm"></div>
+  <main class="max-w-7xl mx-auto px-4 space-y-6">
+    <div id="statusAlert" class="hidden p-4 rounded-lg text-sm font-medium transition-all shadow-sm"></div>
 
-    <form id="formCenso" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-6">
-      
-      <!-- Campo oculto para almacenar el número de fila si se actualiza un registro -->
-      <input type="hidden" id="row" name="row" value="" />
+    <!-- PASO 1: BÚSQUEDA Y ASIGNACIÓN MASIVA DE FICHA, DIRECCIÓN Y GPS -->
+    <div class="bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-4">
+      <h2 class="text-lg font-semibold text-blue-900 border-b pb-2 flex items-center gap-2">
+        <i data-lucide="home" class="w-5 h-5 text-blue-600"></i>
+        1. Ficha Familiar, Ubicación y Georreferencia Masiva
+      </h2>
 
-      <!-- SECCIÓN 1: BÚSQUEDA Y DATOS PERSONALES -->
-      <div>
-        <h2 class="text-lg font-semibold text-blue-900 border-b pb-2 mb-4 flex items-center gap-2">
-          <i data-lucide="user" class="w-5 h-5 text-blue-600"></i>
-          Datos de Identificación del Paciente
-        </h2>
+      <!-- FICHA FAMILIAR Y GPS -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+        <div>
+          <label for="ffamiliar" class="block text-xs font-bold text-slate-700 uppercase mb-1">
+            Ficha Familiar<span class="text-red-500">*</span>
+          </label>
+          <div class="relative flex">
+            <input type="text" id="ffamiliar" name="ffamiliar" required pattern="[0-9]{1,7}" maxlength="7"
+              placeholder="Hasta 7 dígitos"
+              oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+              class="w-full pl-3 pr-10 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono font-bold text-blue-800 text-lg">
+            <button type="button" onclick="buscarFichaFamiliar()" title="Consultar Ficha Familiar"
+              class="absolute right-1 top-1 bottom-1 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center justify-center transition">
+              <i data-lucide="search" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          
-          <!-- DNI (Columna A) con búsqueda rápida -->
-          <div class="md:col-span-1">
-            <label for="dni" class="block text-xs font-bold text-slate-700 uppercase mb-1">
-              DNI (Columna A) <span class="text-red-500">*</span>
-            </label>
-            <div class="relative flex">
-              <input type="text" id="dni" name="dni" required pattern="[0-9]{8}" maxlength="8"
-                placeholder="8 dígitos"
-                class="w-full pl-3 pr-10 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-mono text-base">
-              <button type="button" onclick="buscarDNI()" title="Buscar DNI en sistema"
-                class="absolute right-1 top-1 bottom-1 px-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center justify-center transition">
+        <div class="md:col-span-2">
+          <label for="georeferencia" class="block text-xs font-bold text-slate-700 uppercase mb-1">
+            Georreferencia GPS de la Vivienda
+          </label>
+          <div class="flex flex-wrap gap-2">
+            <input type="text" id="georeferencia" name="georeferencia" readonly placeholder="-9.XXXXX, -75.XXXXX"
+              class="flex-1 min-w-[180px] px-3 py-2 border border-slate-300 bg-slate-50 rounded-lg outline-none text-slate-600 font-mono text-sm font-semibold">
+            
+            <button type="button" onclick="obtenerGeolocalizacion()"
+              class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex items-center gap-1.5 text-xs font-medium transition shadow-sm">
+              <i data-lucide="map-pin" class="w-4 h-4"></i> Capturar GPS Actual
+            </button>
+
+            <button type="button" id="btnGpsTodos" onclick="actualizarGpsTodosIntegrantes()"
+              class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center gap-1.5 text-xs font-bold transition shadow-sm">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i> Aplicar GPS a Toda la Familia
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTOR, REF DIRECCIÓN Y MZ PARA LA FAMILIA -->
+      <div class="bg-blue-50/60 p-4 rounded-xl border border-blue-100 space-y-3">
+        <span class="text-xs font-bold text-blue-900 uppercase tracking-wide flex items-center gap-1">
+          <i data-lucide="map" class="w-4 h-4 text-blue-600"></i> Asignación de Dirección para la Familia
+        </span>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+          <div>
+            <label for="sector_masivo" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Sector<span class="text-red-500">*</span></label>
+            <div class="relative flex items-center">
+              <input type="text" id="sector_masivo" readonly placeholder="SELECCIONE SECTOR..." 
+                onclick="abrirModalSectores('sector_masivo')"
+                class="w-full pl-3 pr-10 py-2 border border-slate-300 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none uppercase bg-white cursor-pointer select-none">
+              <button type="button" onclick="abrirModalSectores('sector_masivo')" title="Buscar Sector Registrado"
+                class="absolute right-1 top-1 bottom-1 px-2.5 bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-600 rounded-md transition flex items-center justify-center border border-slate-200">
                 <i data-lucide="search" class="w-4 h-4"></i>
               </button>
             </div>
-            <span class="text-[11px] text-slate-500">Presiona buscar o Tab para consultar</span>
           </div>
 
-          <!-- Apellidos y Nombres (Columna B) -->
+          <div>
+            <label for="ref_direccion_masivo" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Ref. Dirección</label>
+            <input type="text" id="ref_direccion_masivo" placeholder="Ej: Av. Principal / Frente al parque" 
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none uppercase bg-white">
+          </div>
+
+          <div>
+            <label for="mz_masivo" class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Mz / Manzana</label>
+            <input type="text" id="mz_masivo" placeholder="Ej: 5" 
+              oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono font-bold focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+          </div>
+        </div>
+
+        <div class="flex justify-end pt-1">
+          <button type="button" id="btnDireccionTodos" onclick="actualizarDireccionTodosIntegrantes()"
+            class="px-4 py-2 bg-blue-800 hover:bg-blue-900 text-white rounded-lg flex items-center gap-1.5 text-xs font-bold transition shadow-sm">
+            <i data-lucide="check-check" class="w-4 h-4"></i> Asignar Sector, Ref. Direc y Mz a Todos los DNI
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASO 2: LISTADO COMPLETO Y FORMULARIO -->
+    <div id="seccionIntegrantes" class="bg-white rounded-xl shadow-md p-6 border border-slate-200">
+      <div class="flex justify-between items-center border-b pb-3 mb-4">
+        <h2 class="text-lg font-semibold text-blue-900 flex items-center gap-2">
+          <i data-lucide="users" class="w-5 h-5 text-blue-600"></i>
+          2. Integrantes del Grupo Familiar
+        </h2>
+        <button type="button" onclick="prepararFormularioNuevo()" 
+          class="px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 font-semibold rounded-lg text-xs flex items-center gap-1 border border-blue-200 transition">
+          <i data-lucide="user-plus" class="w-4 h-4"></i> Nuevo Integrante
+        </button>
+      </div>
+
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-[11px] text-left border-collapse min-w-[1000px]">
+          <thead>
+            <tr class="bg-slate-100 text-slate-700 font-bold border-b uppercase">
+              <th class="p-2 border-r">Fila</th>
+              <th class="p-2 border-r">DNI</th>
+              <th class="p-2 border-r">Apellidos y Nombres</th>
+              <th class="p-2 border-r">F. Nac</th>
+              <th class="p-2 border-r">Sexo</th>
+              <th class="p-2 border-r">HC</th>
+              <th class="p-2 border-r">Teléfono</th>
+              <th class="p-2 border-r">Est. Civil</th>
+              <th class="p-2 border-r">Sector</th>
+              <th class="p-2 border-r">Ref. Direc</th>
+              <th class="p-2 border-r">Mz</th>
+              <th class="p-2 border-r">GPS</th>
+              <th class="p-2 text-center">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tablaIntegrantesBody">
+            <tr>
+              <td colspan="13" class="p-4 text-center text-slate-400 font-sans text-xs">
+                Ingresa y consulta una Ficha Familiar para visualizar todos sus datos.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- FORMULARIO DE INTEGRANTE -->
+      <form id="formCenso" class="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-4">
+        <input type="hidden" id="row" name="row" value="" />
+        
+        <div class="flex justify-between items-center border-b border-slate-200 pb-2">
+          <span id="formTitle" class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="edit-3" class="w-4 h-4 text-blue-600"></i> Formulario de Integrante
+          </span>
+          <span id="badgeEstado" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded font-mono font-bold">NUEVO REGISTRO</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <!-- CAMPO NUEVO: FICHA FAMILIAR EN FORMULARIO -->
+          <div>
+            <label for="form_ffamiliar" class="block text-xs font-bold text-slate-700 uppercase mb-1">
+              Ficha Familiar<span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="form_ffamiliar" name="form_ffamiliar" required pattern="[0-9]{1,7}" maxlength="7"
+              placeholder="Nº Ficha"
+              oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono font-bold text-blue-800">
+          </div>
+
+          <!-- BÚSQUEDA AUTOMÁTICA POR DNI -->
+          <div>
+            <label for="dni" class="block text-xs font-bold text-slate-700 uppercase mb-1">
+              DNI<span class="text-red-500">*</span>
+            </label>
+            <div class="relative flex">
+              <input type="text" id="dni" name="dni" required pattern="[0-9]{8}" maxlength="8" placeholder="8 dígitos"
+                oninput="this.value = this.value.replace(/[^0-9]/g, ''); evaluarConsultaDNI(this.value)"
+                class="w-full pl-3 pr-8 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono">
+              <button type="button" onclick="consultarDniIndividual()" title="Buscar DNI en Censo"
+                class="absolute right-1 top-1 bottom-1 px-2 text-slate-400 hover:text-blue-600 transition">
+                <i data-lucide="search" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
           <div class="md:col-span-2">
-            <label for="nombreB" class="block text-xs font-bold text-slate-700 uppercase mb-1">
-              Apellidos y Nombres (Columna B) <span class="text-red-500">*</span>
-            </label>
+            <label for="nombreB" class="block text-xs font-bold text-slate-700 uppercase mb-1">Apellidos y Nombres<span class="text-red-500">*</span></label>
             <input type="text" id="nombreB" name="nombreB" required placeholder="NOMBRES Y APELLIDOS COMPLETOS"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none uppercase">
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none uppercase">
           </div>
 
-          <!-- Fecha de Nacimiento (Columna C) -->
           <div>
-            <label for="fn" class="block text-xs font-bold text-slate-700 uppercase mb-1">
-              Fecha de Nacimiento (Columna C)
-            </label>
-            <input type="date" id="fn" name="fn"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            <label for="fn" class="block text-xs font-bold text-slate-700 uppercase mb-1">Fecha Nac.</label>
+            <input type="date" id="fn" name="fn" class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none">
           </div>
 
-          <!-- Sexo (Columna D) -->
           <div>
-            <label for="sexo" class="block text-xs font-bold text-slate-700 uppercase mb-1">
-              Sexo (Columna D)
-            </label>
-            <select id="sexo" name="sexo"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            <label for="sexo" class="block text-xs font-bold text-slate-700 uppercase mb-1">Sexo</label>
+            <select id="sexo" name="sexo" class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none">
               <option value="">-- Seleccionar --</option>
               <option value="M">MASCULINO</option>
               <option value="F">FEMENINO</option>
             </select>
           </div>
 
-          <!-- Historia Clínica (Columna E) -->
           <div>
-            <label for="hclinica" class="block text-xs font-bold text-slate-700 uppercase mb-1">
-              Historia Clínica (Columna E)
-            </label>
-            <input type="text" id="hclinica" name="hclinica" placeholder="Nº de HC"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            <label for="hclinica" class="block text-xs font-bold text-slate-700 uppercase mb-1">HC</label>
+            <input type="text" id="hclinica" name="hclinica" placeholder="Nº HC" class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none">
           </div>
 
-        </div>
-      </div>
-
-      <!-- SECCIÓN 2: DATOS FAMILIARES Y UBICACIÓN -->
-      <div>
-        <h2 class="text-lg font-semibold text-blue-900 border-b pb-2 mb-4 flex items-center gap-2">
-          <i data-lucide="home" class="w-5 h-5 text-blue-600"></i>
-          Ficha Familiar y Sectorización
-        </h2>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-          <!-- Ficha Familiar (Columna F) - Validación de 7 DÍGITOS NUMÉRICOS -->
           <div>
-            <label for="ffamiliar" class="block text-xs font-bold text-slate-700 uppercase mb-1">
-              Ficha Familiar (Columna F) <span class="text-red-500">*</span>
-            </label>
-            <input type="text" id="ffamiliar" name="ffamiliar" required pattern="[0-9]{7}" maxlength="7"
-              placeholder="7 dígitos exactamente"
-              oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-mono font-bold text-blue-800">
-            <span class="text-[11px] text-slate-500">Requerido: 7 números exactos</span>
+            <label for="telefono" class="block text-xs font-bold text-slate-700 uppercase mb-1">Celular</label>
+            <input type="tel" id="telefono" name="telefono" maxlength="9" placeholder="9XXXXXXXX" class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none">
           </div>
 
-          <!-- Teléfono (Columna G) -->
           <div>
-            <label for="telefono" class="block text-xs font-bold text-slate-700 uppercase mb-1">
-              Teléfono (Columna G)
-            </label>
-            <input type="tel" id="telefono" name="telefono" maxlength="9" placeholder="9XXXXXXXX"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
-          </div>
-
-          <!-- Estado Civil (Columna H) -->
-          <div>
-            <label for="estado_civil" class="block text-xs font-bold text-slate-700 uppercase mb-1">
-              Estado Civil (Columna H)
-            </label>
-            <select id="estado_civil" name="estado_civil"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            <label for="estado_civil" class="block text-xs font-bold text-slate-700 uppercase mb-1">Estado Civil</label>
+            <select id="estado_civil" name="estado_civil" class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none">
               <option value="">-- Seleccionar --</option>
-              <option value="SOLTERO(A)">SOLTERO(A)</option>
-              <option value="CASADO(A)">CASADO(A)</option>
+              <option value="SOLTERO">SOLTERO</option>
+              <option value="CASADO">CASADO</option>
               <option value="CONVIVIENTE">CONVIVIENTE</option>
-              <option value="DIVORCIADO(A)">DIVORCIADO(A)</option>
-              <option value="VIUDO(A)">VIUDO(A)</option>
+              <option value="DIVORCIADO">DIVORCIADO</option>
+              <option value="VIUDO">VIUDO</option>
             </select>
           </div>
 
-          <!-- Sector (Columna I) -->
+          <!-- SECTOR EXCLUSIVO VÍA BUSCADOR LUPA -->
           <div>
-            <label for="sector" class="block text-xs font-bold text-slate-700 uppercase mb-1">
-              Sector (Columna I)
-            </label>
-            <input type="text" id="sector" name="sector" placeholder="Ej: SECTOR 7"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none uppercase">
-          </div>
-
-          <!-- Referencia Dirección (Columna J) -->
-          <div class="md:col-span-2">
-            <label for="ref_direccion" class="block text-xs font-bold text-slate-700 uppercase mb-1">
-              Referencia de Dirección (Columna J)
-            </label>
-            <input type="text" id="ref_direccion" name="ref_direccion" placeholder="Ej: Frente al parque / Av. Principal"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none uppercase">
-          </div>
-
-          <!-- Mz (Columna K) -->
-          <div>
-            <label for="mz" class="block text-xs font-bold text-slate-700 uppercase mb-1">
-              Manzana / Lote (Columna K)
-            </label>
-            <input type="text" id="mz" name="mz" placeholder="Ej: Mz A Lt 5"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none uppercase">
-          </div>
-
-          <!-- Georreferencia (Columna L) -->
-          <div class="md:col-span-2">
-            <label for="georeferencia" class="block text-xs font-bold text-slate-700 uppercase mb-1">
-              Georreferencia GPS (Columna L)
-            </label>
-            <div class="flex gap-2">
-              <input type="text" id="georeferencia" name="georeferencia" readonly placeholder="-9.XXXXX, -75.XXXXX"
-                class="w-full px-3 py-2 border border-slate-300 bg-slate-50 rounded-lg outline-none text-slate-600 font-mono text-sm">
-              <button type="button" onclick="obtenerGeolocalizacion()"
-                class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex items-center gap-1.5 text-xs font-medium transition whitespace-nowrap">
-                <i data-lucide="map-pin" class="w-4 h-4"></i> Capturar GPS
+            <label for="sector" class="block text-xs font-bold text-slate-700 uppercase mb-1">Sector</label>
+            <div class="relative flex items-center">
+              <input type="text" id="sector" name="sector" readonly placeholder="SELECCIONE SECTOR..." 
+                onclick="abrirModalSectores('sector')"
+                class="w-full pl-3 pr-10 py-2 border border-slate-300 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none uppercase bg-white cursor-pointer select-none">
+              <button type="button" onclick="abrirModalSectores('sector')" title="Buscar Sector Registrado"
+                class="absolute right-1 top-1 bottom-1 px-2.5 bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-600 rounded-md transition flex items-center justify-center border border-slate-200">
+                <i data-lucide="search" class="w-4 h-4"></i>
               </button>
             </div>
           </div>
 
+          <div>
+            <label for="ref_direccion" class="block text-xs font-bold text-slate-700 uppercase mb-1">Ref. Dirección</label>
+            <input type="text" id="ref_direccion" name="ref_direccion" placeholder="Ej: Av. Principal" class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none uppercase">
+          </div>
+
+          <!-- MANZANA SOLO NÚMEROS -->
+          <div>
+            <label for="mz" class="block text-xs font-bold text-slate-700 uppercase mb-1">Mz</label>
+            <input type="text" id="mz" name="mz" placeholder="Solo Números" 
+              oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none font-mono font-bold">
+          </div>
         </div>
-      </div>
 
-      <!-- BOTONES DE ACCIÓN -->
-      <div class="pt-4 border-t flex flex-col sm:flex-row gap-3 justify-end">
-        <button type="button" onclick="limpiarFormulario()"
-          class="px-5 py-2.5 border border-slate-300 hover:bg-slate-100 text-slate-700 font-medium rounded-lg transition flex items-center justify-center gap-2">
-          <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Limpiar Formulario
-        </button>
-        
-        <button type="submit" id="btnGuardar"
-          class="px-6 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-lg shadow-md transition flex items-center justify-center gap-2">
-          <i data-lucide="save" class="w-4 h-4"></i> Guardar Registro
-        </button>
-      </div>
-
-    </form>
+        <div class="pt-2 flex gap-3 justify-end">
+          <button type="button" onclick="limpiarFormularioPersona()" class="px-4 py-2 border border-slate-300 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition">
+            Limpiar Campos
+          </button>
+          <button type="submit" id="btnGuardar" class="px-6 py-2 bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold rounded-lg shadow-md transition flex items-center gap-1.5">
+            <i data-lucide="save" class="w-4 h-4"></i> Guardar / Actualizar
+          </button>
+        </div>
+      </form>
+    </div>
   </main>
 
-  <!-- LÓGICA DE JAVASCRIPT -->
+  <!-- MODAL BÚSQUEDA DE SECTORES RESTRINGIDO -->
+  <div id="modalSectores" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-lg overflow-hidden flex flex-col max-h-[80vh]">
+      <div class="p-4 bg-blue-700 text-white flex justify-between items-center">
+        <h3 class="font-bold text-sm flex items-center gap-2">
+          <i data-lucide="map-pin" class="w-4 h-4"></i> Seleccionar Sector Registrado
+        </h3>
+        <button onclick="cerrarModalSectores()" class="text-blue-200 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      
+      <div class="p-4 border-b bg-slate-50">
+        <input type="text" id="filtroSectores" oninput="filtrarListaSectores(this.value)" placeholder="Escriba para buscar (ej. 25 de Enero, Jacintillo)..."
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500 uppercase">
+      </div>
+
+      <div class="p-2 overflow-y-auto flex-1 space-y-1" id="contenedorModalSectores">
+        <!-- Generado dinámicamente -->
+      </div>
+
+      <div class="p-3 border-t bg-slate-100 flex justify-end">
+        <button onclick="cerrarModalSectores()" class="px-4 py-1.5 bg-slate-300 hover:bg-slate-400 text-slate-800 text-xs font-bold rounded-lg">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // Inicializar iconos de Lucide
     lucide.createIcons();
 
-    // Endpoint de tu Web App de Google Apps Script
-    const URL_CENSO = "https://script.google.com/macros/s/AKfycbwkYPuO13juZBjhs7wrxX0MEYy-hPeg0HyzjDJ9_Oy-Yq3Fih99wFAyI5xlbJ_u4rBX1g/exec";
+    const URL_CENSO = "https://script.google.com/macros/s/AKfycbz-PaNW15W43wBS8AmlEHfFe4QrUnITK-8yEnvwoGUnpw7PdbpNvJhPCc4q5qDs8c3WWg/exec";
+    let listaIntegrantes = [];
 
-    // Manejador del evento Submit del formulario
-    document.getElementById('formCenso').addEventListener('submit', async function(e) {
-      e.preventDefault();
+    // ARRAY ARRAY OFICIAL Y ÚNICO DE SECTORES RESTRINGIDOS
+    const SECTORES_VALIDOS = [
+      "933-AA.VV. 25 DE ENERO",
+      "933-AA.VV. CARMEN GARAY",
+      "933-AA.VV. FUNDO NUEVA ESPERANZA",
+      "933-AA.VV. LOS LAURELES",
+      "933-AA.VV. PUEBLO LIBRE",
+      "933-AA.VV.01 DE MAYO",
+      "933-AA.VV.01 DE SETIEMBRE",
+      "933-AA.VV.07 DE MAYO",
+      "933-AA.VV.09 DE AGOSTO",
+      "933-AA.VV.15 DE AGOSTO",
+      "933-AA.VV.CESAR VALLEJO",
+      "933-AA.VV.CIUDAD COLINA",
+      "933-AA.VV.COLONIA TINGALESA",
+      "933-AA.VV.EDUARDO VILLASANTE",
+      "933-AA.VV.JOSE CARLOS MARIATEGUI",
+      "933-AA.VV.JOSE OLAYA BALANDRA",
+      "933-AA.VV.JUAN PICON QUEDO",
+      "933-AA.VV.JULIO MARTINEZ",
+      "933-AA.VV.LAS ALMENDRAS",
+      "933-AA.VV.LAS AMAZONAS",
+      "933-AA.VV.LAS PALMERAS",
+      "933-AA.VV.LOS ANGELES",
+      "933-AA.VV.LOS JARDINES",
+      "933-AA.VV.LOS PINOS",
+      "933-AA.VV.MARIA PARADO DE BELLIDO",
+      "933-AA.VV.MONTERRICO",
+      "933-AA.VV.NUEVA ESPERANZA",
+      "933-AA.VV.NUEVA JERUSALEN",
+      "933-AA.VV.NUEV AMANECER",
+      "933-AA.VV.PADRES DE FAMILIA",
+      "933-AA.VV.PANTOJA",
+      "933-AA.VV.PEDREGAL",
+      "933-AA.VV.POBLADORES DE CASTILLO GRANDE",
+      "933-AA.VV.SAN CARLOS",
+      "933-AA.VV.SAN ISIDRO",
+      "933-AA.VV.SAN MIGUEL",
+      "933-AA.VV.SANTA ROSA",
+      "933-SOL NACIENTE",
+      "933-COMUNIDAD ASERRADERO",
+      "933-COMUNIDAD CAPITAN SOTO",
+      "933-COMUNIDAD HUANGANAPAMPA",
+      "933-COMUNIDAD HUAYNACAPAC",
+      "933-COMUNIDAD JACINTILLO",
+      "933-COMUNIDAD LA CURVA",
+      "933-COMUNIDAD LA FLORIDA",
+      "933-COMUNIDAD MANCO CAPAC",
+      "933-COMUNIDAD MANTARO",
+      "933-COMUNIDAD MERCED DE LOCRO",
+      "933-COMUNIDAD MOYANO",
+      "933-COMUNIDAD NUEVA ALTURA",
+      "933-COMUNIDAD PACHACUTEC",
+      "933-COMUNIDAD PAPAYAL",
+      "933-COMUNIDAD PICUROYACU",
+      "933-COMUNIDAD SANTA ROSA DE CASTILLA",
+      "933-COMUNIDAD SHAMIRO",
+      "933-COMUNIDAD SINCHI ROCCA",
+      "933-COMUNIDAD VENADO PAMPA",
+      "933-COMUNIDAD YURIMAGUAS",
+      "933-SIN SECTOR"
+      "933-OTRO DISTRITO"
+    ];
 
-      // Validar Ficha Familiar exactamente de 7 dígitos
-      const ffamiliar = document.getElementById('ffamiliar').value;
-      if (!/^\d{7}$/.test(ffamiliar)) {
-        mostrarAlerta("❌ La Ficha Familiar debe contener exactamente 7 dígitos numéricos.", "bg-red-100 text-red-800 border-red-300");
+    let idInputSectorDestino = '';
+
+    // Validar coincidencia estricta con la lista
+    function esSectorValido(sectorTexto) {
+      if (!sectorTexto) return true;
+      return SECTORES_VALIDOS.includes(sectorTexto.trim().toUpperCase());
+    }
+
+    // Funciones del Modal de Sectores
+    function abrirModalSectores(inputId) {
+      idInputSectorDestino = inputId;
+      document.getElementById('filtroSectores').value = "";
+      renderizarListaModalSectores(SECTORES_VALIDOS);
+      document.getElementById('modalSectores').classList.remove('hidden');
+      document.getElementById('filtroSectores').focus();
+    }
+
+    function cerrarModalSectores() {
+      document.getElementById('modalSectores').classList.add('hidden');
+    }
+
+    function renderizarListaModalSectores(lista) {
+      const cont = document.getElementById('contenedorModalSectores');
+      cont.innerHTML = "";
+
+      if (lista.length === 0) {
+        cont.innerHTML = `<div class="p-3 text-center text-xs text-slate-400">No se encontraron sectores coincidentes.</div>`;
         return;
       }
 
-      // Preparar objeto de datos para enviar
+      lista.forEach(sec => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = "w-full text-left px-3 py-2 hover:bg-blue-50 text-slate-700 font-semibold text-xs rounded-md border border-transparent hover:border-blue-200 transition flex items-center justify-between";
+        item.innerHTML = `<span>${sec}</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-blue-500"></i>`;
+        item.onclick = () => seleccionarSectorModal(sec);
+        cont.appendChild(item);
+      });
+      lucide.createIcons();
+    }
+
+    function filtrarListaSectores(texto) {
+      const q = texto.toUpperCase();
+      const filtrados = SECTORES_VALIDOS.filter(s => s.toUpperCase().includes(q));
+      renderizarListaModalSectores(filtrados);
+    }
+
+    function seleccionarSectorModal(sectorSeleccionado) {
+      if (idInputSectorDestino) {
+        document.getElementById(idInputSectorDestino).value = sectorSeleccionado;
+      }
+      cerrarModalSectores();
+    }
+
+    // Búsqueda por Ficha Familiar
+    async function buscarFichaFamiliar() {
+      let ffamiliarVal = document.getElementById('ffamiliar').value.trim();
+      if (!/^\d{1,7}$/.test(ffamiliarVal)) {
+        mostrarAlerta("⚠️ Ingrese una Ficha Familiar válida (hasta 7 dígitos).", "bg-amber-100 text-amber-800 border-amber-300");
+        return;
+      }
+
+      const ffamiliar = String(ffamiliarVal).padStart(7, '0');
+      document.getElementById('ffamiliar').value = ffamiliar;
+      document.getElementById('form_ffamiliar').value = ffamiliar;
+
+      mostrarAlerta("🔍 Buscando grupo familiar...", "bg-blue-100 text-blue-800 border-blue-300");
+
+      try {
+        const response = await fetch(`${URL_CENSO}?action=buscarFicha&ffamiliar=${encodeURIComponent(ffamiliar)}`);
+        const data = await response.json();
+
+        if (data && data.status === "ok" && data.integrantes && data.integrantes.length > 0) {
+          listaIntegrantes = data.integrantes;
+          
+          // Asignar el GPS si existe en algún integrante
+          const personaConGps = listaIntegrantes.find(p => p.georeferencia);
+          document.getElementById('georeferencia').value = personaConGps ? personaConGps.georeferencia : "";
+
+          // Rellenar datos de dirección del primer integrante
+          document.getElementById('sector_masivo').value = listaIntegrantes[0].sector || "";
+          document.getElementById('ref_direccion_masivo').value = listaIntegrantes[0].ref_direccion || "";
+          document.getElementById('mz_masivo').value = listaIntegrantes[0].mz || "";
+
+          renderizarTablaIntegrantes();
+          limpiarFormularioPersona();
+          
+          mostrarAlerta(`✅ Ficha ${ffamiliar} recuperada: ${listaIntegrantes.length} integrante(s) encontrados. Puede actualizar el GPS capturando la posición actual si es necesario.`, "bg-green-100 text-green-800 border-green-300");
+        } else {
+          // FICHA NUEVA / INEXISTENTE: Limpieza total para nuevo registro
+          listaIntegrantes = [];
+          document.getElementById('georeferencia').value = "";
+          document.getElementById('sector_masivo').value = "";
+          document.getElementById('ref_direccion_masivo').value = "";
+          document.getElementById('mz_masivo').value = "";
+
+          renderizarTablaIntegrantes();
+          limpiarFormularioPersona();
+          
+          mostrarAlerta(`ℹ️ La Ficha ${ffamiliar} no existe en la base de datos. Se han limpiado los campos para ingresar un nuevo grupo familiar.`, "bg-blue-100 text-blue-800 border-blue-300");
+        }
+      } catch (error) {
+        console.error("Error al consultar:", error);
+        mostrarAlerta("❌ Error al conectar con Google Sheets.", "bg-red-100 text-red-800 border-red-300");
+      }
+    }
+
+    // EVALÚA LA ENTRADA DE DNI EN TIEMPO REAL
+    function evaluarConsultaDNI(val) {
+      if (val.length === 8) {
+        const enMemoria = listaIntegrantes.find(p => String(p.dni).trim() === String(val).trim());
+        if (enMemoria) {
+          cargarPersonaEnFormulario(val);
+          mostrarAlerta(`ℹ️ DNI ${val} hallado en la lista actual de la Ficha Familiar.`, "bg-blue-100 text-blue-800 border-blue-300");
+        } else {
+          consultarDniIndividual();
+        }
+      }
+    }
+
+    // CONSULTA DIRECTA POR DNI
+    async function consultarDniIndividual() {
+      const dni = document.getElementById('dni').value.trim();
+      if (!/^\d{8}$/.test(dni)) return;
+
+      mostrarAlerta(`🔍 Consultando DNI ${dni} en la base de datos del Censo...`, "bg-blue-100 text-blue-800 border-blue-300");
+
+      try {
+        const response = await fetch(`${URL_CENSO}?action=buscar&dni=${encodeURIComponent(dni)}`);
+        const data = await response.json();
+
+        if (data && data.status === "ok") {
+          document.getElementById('row').value = data.row || "";
+          
+          // MOSTRAR FICHA FAMILIAR EN EL FORMULARIO Y EN LA SECCIÓN PRINCIPAL
+          if (data.ffamiliar) {
+            const ffPadded = String(data.ffamiliar).padStart(7, '0');
+            document.getElementById('form_ffamiliar').value = ffPadded;
+            document.getElementById('ffamiliar').value = ffPadded;
+          }
+
+          document.getElementById('nombreB').value = data.nombreB || "";
+          
+          if (data.fn) {
+            const partes = data.fn.split('/');
+            document.getElementById('fn').value = partes.length === 3 ? `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}` : data.fn;
+          } else {
+            document.getElementById('fn').value = "";
+          }
+
+          document.getElementById('sexo').value = data.sexo || "";
+          document.getElementById('hclinica').value = data.hclinica || "";
+          document.getElementById('telefono').value = data.telefono || "";
+          document.getElementById('estado_civil').value = data.estado_civil || "";
+          document.getElementById('sector').value = data.sector || "";
+          document.getElementById('ref_direccion').value = data.ref_direccion || "";
+          document.getElementById('mz').value = data.mz || "";
+
+          document.getElementById('badgeEstado').textContent = `DNI EXISTENTE (FILA ${data.row})`;
+          document.getElementById('badgeEstado').className = "text-[10px] bg-amber-200 text-amber-800 px-2 py-0.5 rounded font-mono font-bold";
+
+          mostrarAlerta(`✅ Se encontraron datos del DNI ${dni} en el Censo (Fila ${data.row}). Puedes modificarlos y guardarlos.`, "bg-green-100 text-green-800 border-green-300");
+        } else {
+          // DNI INEXISTENTE: Limpia los datos personales manteniendo la dirección masiva por defecto
+          document.getElementById('row').value = "";
+          document.getElementById('nombreB').value = "";
+          document.getElementById('fn').value = "";
+          document.getElementById('sexo').value = "";
+          document.getElementById('hclinica').value = "";
+          document.getElementById('telefono').value = "";
+          document.getElementById('estado_civil').value = "";
+
+          // Asignar por defecto la dirección de la sección masiva si existe
+          document.getElementById('sector').value = document.getElementById('sector_masivo').value || "";
+          document.getElementById('ref_direccion').value = document.getElementById('ref_direccion_masivo').value || "";
+          document.getElementById('mz').value = document.getElementById('mz_masivo').value || "";
+
+          document.getElementById('badgeEstado').textContent = "NUEVO REGISTRO MANUAL";
+          document.getElementById('badgeEstado').className = "text-[10px] bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded font-mono font-bold";
+
+          mostrarAlerta(`ℹ️ <strong>DNI ${dni} no encontrado:</strong> Se limpiaron los campos personales para un nuevo registro. Proceda a ingresar los datos y presione <strong>"Guardar / Actualizar"</strong>.`, "bg-blue-100 text-blue-900 border-blue-300");
+        }
+      } catch (error) {
+        console.error("Error al consultar DNI:", error);
+      }
+    }
+
+    // Actualizar Sector, Ref. Dirección y Mz Masivamente
+    async function actualizarDireccionTodosIntegrantes() {
+      let ffamiliarVal = document.getElementById('ffamiliar').value.trim();
+      const sector = document.getElementById('sector_masivo').value.trim();
+      const refDireccion = document.getElementById('ref_direccion_masivo').value.trim();
+      const mz = document.getElementById('mz_masivo').value.trim();
+
+      if (!ffamiliarVal) {
+        mostrarAlerta("⚠️ Debe indicar una Ficha Familiar válida.", "bg-amber-100 text-amber-800 border-amber-300");
+        return;
+      }
+
+      // Validación estricta de Sector
+      if (!esSectorValido(sector)) {
+        mostrarAlerta("❌ El sector ingresado no es válido. Utilice la lupa para elegir un sector de la lista autorizada.", "bg-red-100 text-red-800 border-red-300");
+        return;
+      }
+
+      const ffamiliar = String(ffamiliarVal).padStart(7, '0');
+
+      const btnDireccionTodos = document.getElementById('btnDireccionTodos');
+      btnDireccionTodos.disabled = true;
+      btnDireccionTodos.innerHTML = `<div class="loader w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full"></div> Aplicando Ubicación...`;
+
+      try {
+        const response = await fetch(`${URL_CENSO}?action=actualizarDireccionFicha&ffamiliar=${encodeURIComponent(ffamiliar)}&sector=${encodeURIComponent(sector)}&ref_direccion=${encodeURIComponent(refDireccion)}&mz=${encodeURIComponent(mz)}`);
+        const textResult = await response.text();
+
+        mostrarAlerta(textResult, "bg-blue-100 text-blue-900 border-blue-300");
+        await buscarFichaFamiliar();
+      } catch (error) {
+        console.error("Error al actualizar dirección masiva:", error);
+        mostrarAlerta("❌ Error al intentar actualizar la dirección masivamente.", "bg-red-100 text-red-800 border-red-300");
+      } finally {
+        btnDireccionTodos.disabled = false;
+        btnDireccionTodos.innerHTML = `<i data-lucide="check-check" class="w-4 h-4"></i> Asignar Sector, Ref. Direc y Mz a Todos los DNI`;
+        lucide.createIcons();
+      }
+    }
+
+    // Actualizar GPS masivo
+    async function actualizarGpsTodosIntegrantes() {
+      let ffamiliarVal = document.getElementById('ffamiliar').value.trim();
+      const gps = document.getElementById('georeferencia').value.trim();
+
+      if (!ffamiliarVal) {
+        mostrarAlerta("⚠️ Debe indicar una Ficha Familiar válida.", "bg-amber-100 text-amber-800 border-amber-300");
+        return;
+      }
+
+      const ffamiliar = String(ffamiliarVal).padStart(7, '0');
+
+      if (!gps) {
+        mostrarAlerta("⚠️ Primero presione 'Capturar GPS Actual' para obtener las coordenadas.", "bg-amber-100 text-amber-800 border-amber-300");
+        return;
+      }
+
+      const btnGpsTodos = document.getElementById('btnGpsTodos');
+      btnGpsTodos.disabled = true;
+      btnGpsTodos.innerHTML = `<div class="loader w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full"></div> Actualizando...`;
+
+      try {
+        const response = await fetch(`${URL_CENSO}?action=actualizarGpsFicha&ffamiliar=${encodeURIComponent(ffamiliar)}&georeferencia=${encodeURIComponent(gps)}`);
+        const textResult = await response.text();
+
+        mostrarAlerta(textResult, "bg-indigo-100 text-indigo-900 border-indigo-300");
+        await buscarFichaFamiliar();
+      } catch (error) {
+        console.error("Error al actualizar GPS masivo:", error);
+        mostrarAlerta("❌ Error al intentar actualizar el GPS masivamente.", "bg-red-100 text-red-800 border-red-300");
+      } finally {
+        btnGpsTodos.disabled = false;
+        btnGpsTodos.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4"></i> Aplicar GPS a Toda la Familia`;
+        lucide.createIcons();
+      }
+    }
+
+    function renderizarTablaIntegrantes() {
+      const tbody = document.getElementById('tablaIntegrantesBody');
+      tbody.innerHTML = "";
+
+      if (listaIntegrantes.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="13" class="p-4 text-center text-slate-400 font-sans text-xs">
+              No hay miembros registrados en esta Ficha Familiar.
+            </td>
+          </tr>`;
+        return;
+      }
+
+      listaIntegrantes.forEach((item) => {
+        const tr = document.createElement('tr');
+        tr.className = "border-b hover:bg-slate-100 font-mono text-[11px]";
+        tr.innerHTML = `
+          <td class="p-2 border-r font-bold text-slate-500 text-center">${item.row || '-'}</td>
+          <td class="p-2 border-r font-bold text-slate-900">${item.dni || ''}</td>
+          <td class="p-2 border-r font-sans font-semibold uppercase text-slate-800">${item.nombreB || ''}</td>
+          <td class="p-2 border-r font-sans">${item.fn || ''}</td>
+          <td class="p-2 border-r text-center font-bold">${item.sexo || ''}</td>
+          <td class="p-2 border-r font-sans">${item.hclinica || ''}</td>
+          <td class="p-2 border-r font-sans">${item.telefono || ''}</td>
+          <td class="p-2 border-r font-sans">${item.estado_civil || ''}</td>
+          <td class="p-2 border-r font-sans">${item.sector || ''}</td>
+          <td class="p-2 border-r font-sans">${item.ref_direccion || ''}</td>
+          <td class="p-2 border-r font-sans font-bold text-blue-900">${item.mz || ''}</td>
+          <td class="p-2 border-r text-[10px] font-bold text-indigo-700">${item.georeferencia || ''}</td>
+          <td class="p-2 text-center font-sans">
+            <button onclick="cargarPersonaEnFormulario('${item.dni}')" 
+              class="px-2 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded font-bold text-[10px] shadow-sm transition">
+              Editar
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function cargarPersonaEnFormulario(dni) {
+      const persona = listaIntegrantes.find(p => String(p.dni).trim() === String(dni).trim());
+      if (!persona) return;
+
+      document.getElementById('row').value = persona.row || "";
+      document.getElementById('form_ffamiliar').value = persona.ffamiliar || document.getElementById('ffamiliar').value || "";
+      document.getElementById('dni').value = persona.dni || "";
+      document.getElementById('nombreB').value = persona.nombreB || "";
+      
+      if (persona.fn) {
+        const partes = persona.fn.split('/');
+        document.getElementById('fn').value = partes.length === 3 ? `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}` : persona.fn;
+      } else {
+        document.getElementById('fn').value = "";
+      }
+
+      document.getElementById('sexo').value = persona.sexo || "";
+      document.getElementById('hclinica').value = persona.hclinica || "";
+      document.getElementById('telefono').value = persona.telefono || "";
+      document.getElementById('estado_civil').value = persona.estado_civil || "";
+      document.getElementById('sector').value = persona.sector || "";
+      document.getElementById('ref_direccion').value = persona.ref_direccion || "";
+      document.getElementById('mz').value = persona.mz || "";
+
+      document.getElementById('badgeEstado').textContent = `EDITANDO FILA ${persona.row}`;
+      document.getElementById('badgeEstado').className = "text-[10px] bg-amber-200 text-amber-800 px-2 py-0.5 rounded font-mono font-bold";
+      
+      document.getElementById('formCenso').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function prepararFormularioNuevo() {
+      limpiarFormularioPersona();
+      document.getElementById('badgeEstado').textContent = "NUEVO INTEGRANTE";
+      document.getElementById('badgeEstado').className = "text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded font-mono font-bold";
+      
+      document.getElementById('form_ffamiliar').value = document.getElementById('ffamiliar').value || "";
+      if (document.getElementById('sector_masivo').value) document.getElementById('sector').value = document.getElementById('sector_masivo').value;
+      if (document.getElementById('ref_direccion_masivo').value) document.getElementById('ref_direccion').value = document.getElementById('ref_direccion_masivo').value;
+      if (document.getElementById('mz_masivo').value) document.getElementById('mz').value = document.getElementById('mz_masivo').value;
+    }
+
+    // ENVÍO DE FORMULARIO
+    document.getElementById('formCenso').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      let ffamiliarVal = document.getElementById('form_ffamiliar').value.trim() || document.getElementById('ffamiliar').value.trim();
+      const georeferencia = document.getElementById('georeferencia').value.trim();
+      const sectorVal = document.getElementById('sector').value.trim();
+
+      if (!ffamiliarVal) {
+        mostrarAlerta("❌ Debe ingresar una Ficha Familiar en el formulario o en la sección superior.", "bg-red-100 text-red-800 border-red-300");
+        return;
+      }
+
+      // Validación estricta de Sector
+      if (!esSectorValido(sectorVal)) {
+        mostrarAlerta("❌ El sector ingresado no es válido. Utilice el botón de la lupa para elegir un sector oficial.", "bg-red-100 text-red-800 border-red-300");
+        return;
+      }
+
+      const ffamiliarTexto = String(ffamiliarVal).padStart(7, '0');
+      document.getElementById('ffamiliar').value = ffamiliarTexto;
+
       const formData = {
         row: document.getElementById('row').value || null,
-        dni: document.getElementById('dni').value.trim(),
+        ffamiliar: ffamiliarTexto,
+        georeferencia: georeferencia,
+        dni: String(document.getElementById('dni').value.trim()),
         nombreB: document.getElementById('nombreB').value.trim(),
         fn: document.getElementById('fn').value,
         sexo: document.getElementById('sexo').value,
         hclinica: document.getElementById('hclinica').value.trim(),
-        ffamiliar: ffamiliar.trim(),
         telefono: document.getElementById('telefono').value.trim(),
         estado_civil: document.getElementById('estado_civil').value,
-        sector: document.getElementById('sector').value.trim(),
+        sector: sectorVal,
         ref_direccion: document.getElementById('ref_direccion').value.trim(),
-        mz: document.getElementById('mz').value.trim(),
-        georeferencia: document.getElementById('georeferencia').value.trim() // Columna L
+        mz: document.getElementById('mz').value.trim()
       };
 
       const btnGuardar = document.getElementById('btnGuardar');
       btnGuardar.disabled = true;
-      btnGuardar.innerHTML = `<div class="loader w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div> Guardando...`;
+      btnGuardar.innerHTML = `<div class="loader w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full"></div> Procesando...`;
 
       try {
         const response = await fetch(URL_CENSO, {
@@ -270,90 +784,20 @@
 
         const textResult = await response.text();
         mostrarAlerta(textResult, "bg-green-100 text-green-800 border-green-300");
-        
-        // Limpiar después de guardar con éxito
-        setTimeout(() => {
-          limpiarFormulario();
-        }, 1500);
+
+        await buscarFichaFamiliar();
+        prepararFormularioNuevo();
 
       } catch (error) {
         console.error("Error al guardar:", error);
-        mostrarAlerta("⚠️ No se pudo guardar. Verifica la conexión o la configuración de Google Apps Script.", "bg-red-100 text-red-800 border-red-300");
+        mostrarAlerta("⚠️ Ocurrió un error al intentar guardar los datos.", "bg-red-100 text-red-800 border-red-300");
       } finally {
         btnGuardar.disabled = false;
-        btnGuardar.innerHTML = `<i data-lucide="save" class="w-4 h-4"></i> Guardar Registro`;
+        btnGuardar.innerHTML = `<i data-lucide="save" class="w-4 h-4"></i> Guardar / Actualizar`;
         lucide.createIcons();
       }
     });
 
-    // Función para buscar datos por DNI en el Apps Script
-    async function buscarDNI() {
-      const dni = document.getElementById('dni').value.trim();
-      if (!dni || dni.length < 8) {
-        mostrarAlerta("⚠️ Ingrese un DNI válido de 8 dígitos para realizar la búsqueda.", "bg-amber-100 text-amber-800 border-amber-300");
-        return;
-      }
-
-      mostrarAlerta("🔍 Consultando base de datos...", "bg-blue-100 text-blue-800 border-blue-300");
-
-      try {
-        const response = await fetch(`${URL_CENSO}?action=buscar&dni=${encodeURIComponent(dni)}`);
-        const data = await response.json();
-
-        if (data && data.status === "ok") {
-          // Rellenar campos existentes con lo recuperado de la base de datos
-          document.getElementById('row').value = data.row || "";
-          document.getElementById('nombreB').value = data.nombreB || "";
-          
-          // Formatear Fecha (Convertir dd/MM/yyyy a YYYY-MM-DD para el input date)
-          if (data.fn) {
-            const partes = data.fn.split('/');
-            if (partes.length === 3) {
-              document.getElementById('fn').value = `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
-            } else {
-              document.getElementById('fn').value = data.fn;
-            }
-          }
-
-          document.getElementById('sexo').value = data.sexo || "";
-          document.getElementById('hclinica').value = data.hclinica || "";
-          document.getElementById('ffamiliar').value = data.ffamiliar || "";
-          document.getElementById('telefono').value = data.telefono || "";
-          document.getElementById('estado_civil').value = data.estado_civil || "";
-          document.getElementById('sector').value = data.sector || "";
-          document.getElementById('ref_direccion').value = data.ref_direccion || "";
-          document.getElementById('mz').value = data.mz || "";
-          
-          if(data.georeferencia) {
-            document.getElementById('georeferencia').value = data.georeferencia;
-          }
-
-          mostrarAlerta(`✅ DNI encontrado en la fila ${data.row}. Puedes actualizar los datos que faltan.`, "bg-green-100 text-green-800 border-green-300");
-        } else {
-          // El DNI no existe aún en la base de datos
-          document.getElementById('row').value = "";
-          const dniActual = document.getElementById('dni').value;
-          
-          // Limpiar el resto de campos manteniendo el DNI
-          limpiarFormulario(false);
-          document.getElementById('dni').value = dniActual;
-          
-          mostrarAlerta("ℹ️ DNI no encontrado. Puedes registrar a esta persona como NUEVO registro.", "bg-blue-100 text-blue-800 border-blue-300");
-        }
-      } catch (error) {
-        console.error("Error al buscar DNI:", error);
-        mostrarAlerta("❌ Error al conectar con Google Sheets. Asegúrate de tener permisos o conexión.", "bg-red-100 text-red-800 border-red-300");
-      }
-    }
-
-    // Escuchar pérdida de foco o ENTER en el DNI para autobúsqueda rápida
-    document.getElementById('dni').addEventListener('blur', function() {
-      if (this.value.trim().length === 8 && !document.getElementById('row').value) {
-        buscarDNI();
-      }
-    });
-
-    // Captura de coordenadas GPS
     function obtenerGeolocalizacion() {
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
@@ -361,39 +805,29 @@
             const lat = position.coords.latitude.toFixed(6);
             const lng = position.coords.longitude.toFixed(6);
             document.getElementById('georeferencia').value = `${lat}, ${lng}`;
-            mostrarAlerta("📍 Ubicación GPS obtenida correctamente.", "bg-emerald-100 text-emerald-800 border-emerald-300");
+            mostrarAlerta("📍 Ubicación GPS capturada correctamente.", "bg-emerald-100 text-emerald-800 border-emerald-300");
           },
           function(error) {
-            mostrarAlerta("⚠️ No se pudo obtener la ubicación GPS. Verifica los permisos de tu navegador.", "bg-amber-100 text-amber-800 border-amber-300");
+            mostrarAlerta("⚠️ No se pudo acceder a la geolocalización.", "bg-amber-100 text-amber-800 border-amber-300");
           },
           { enableHighAccuracy: true, timeout: 10000 }
         );
       } else {
-        mostrarAlerta("❌ Tu navegador no soporta geolocalización.", "bg-red-100 text-red-800 border-red-300");
+        mostrarAlerta("❌ Geolocalización no soportada en este navegador.", "bg-red-100 text-red-800 border-red-300");
       }
     }
 
-    // Limpiar todos los campos del formulario
-    function limpiarFormulario(limpiarTodo = true) {
+    function limpiarFormularioPersona() {
       document.getElementById('formCenso').reset();
       document.getElementById('row').value = "";
-      document.getElementById('georeferencia').value = "";
-      if (limpiarTodo) {
-        ocultarAlerta();
-      }
+      document.getElementById('form_ffamiliar').value = document.getElementById('ffamiliar').value || "";
     }
 
-    // Auxiliares para mensajes
     function mostrarAlerta(mensaje, clasesCss) {
       const alertDiv = document.getElementById('statusAlert');
-      alertDiv.className = `mb-4 p-4 rounded-lg text-sm font-medium transition-all shadow-sm border ${clasesCss}`;
+      alertDiv.className = `p-4 rounded-lg text-sm font-medium transition-all shadow-sm border ${clasesCss}`;
       alertDiv.innerHTML = mensaje;
       alertDiv.classList.remove('hidden');
-    }
-
-    function ocultarAlerta() {
-      const alertDiv = document.getElementById('statusAlert');
-      alertDiv.classList.add('hidden');
     }
   </script>
 </body>
