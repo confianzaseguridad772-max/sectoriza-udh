@@ -14,17 +14,73 @@
     .loader { border-top-color: #3b82f6; animation: spinner 0.6s linear infinite; }
     @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+
+    /* REGLAS DE IMPRESIÓN / PDF (1 SOLA HOJA VERTICAL A4) */
     @media print {
-      body { background: white !important; }
-      header, #formCenso, .no-print { display: none !important; }
-      .glass-card { border: none !important; shadow: none !important; }
+      @page {
+        size: A4 portrait;
+        margin: 8mm;
+      }
+      body {
+        background: white !important;
+        color: black !important;
+        font-size: 9pt !important;
+        padding-bottom: 0 !important;
+      }
+      header, .no-print, #statusAlert, #modalConfirmDesvincular {
+        display: none !important;
+      }
+      main {
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        space-y: 8px !important;
+      }
+      .glass-card {
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: none !important;
+        padding: 8px !important;
+        margin-bottom: 8px !important;
+        border-radius: 8px !important;
+      }
+      table {
+        font-size: 8.5pt !important;
+      }
+      th, td {
+        padding: 4px 5px !important;
+      }
+      .print-header {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #1e3a8a;
+        padding-bottom: 6px;
+        margin-bottom: 8px;
+      }
+      /* OCULTAR COLUMNAS REPETITIVAS SOLO AL IMPRIMIR */
+      .col-repeat-print {
+        display: none !important;
+      }
     }
+
+    .print-header { display: none; }
   </style>
 </head>
 <body class="bg-slate-100/80 min-h-screen pb-16 text-slate-800 antialiased">
 
-  <!-- HEADER MODERNO CON FECHA Y HORA -->
-  <header class="bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-900 text-white shadow-xl sticky top-0 z-40">
+  <!-- HEADER OFICIAL VISIBLE EN IMPRESIÓN -->
+  <div class="print-header">
+    <div>
+      <h1 class="text-base font-extrabold text-blue-900 uppercase">Ficha Familiar - Salud Comunitaria</h1>
+      <p class="text-[10px] text-slate-600 font-semibold">MINSA / Red de Salud / Centro de Salud Castillo Grande</p>
+    </div>
+    <div class="text-right text-[10px] font-mono">
+      <p><b>Fecha de Impresión:</b> <span class="print-date"></span></p>
+    </div>
+  </div>
+
+  <!-- HEADER MODERNO CON FECHA Y HORA (NO PRINT) -->
+  <header class="bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-900 text-white shadow-xl sticky top-0 z-40 no-print">
     <div class="max-w-7xl mx-auto px-4 py-3 sm:py-4 flex flex-col sm:flex-row justify-between items-center gap-3">
       <div class="flex items-center space-x-3 w-full sm:w-auto justify-between sm:justify-start">
         <div class="flex items-center space-x-3">
@@ -64,7 +120,13 @@
           <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 text-blue-700 text-xs font-black">1</span>
           Ficha Familiar, Ubicación y Georreferencia Masiva
         </h2>
-        <span class="hidden md:inline-flex bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-full">Asignador Principal</span>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="nuevaConsultaFicha()" 
+            class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold rounded-xl text-xs flex items-center gap-1 border border-slate-300 transition shadow-sm no-print">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-slate-600"></i> Nueva Consulta
+          </button>
+          <span class="hidden md:inline-flex bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-full no-print">Asignador Principal</span>
+        </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
@@ -78,7 +140,7 @@
               oninput="this.value = this.value.replace(/[^0-9]/g, '')"
               class="w-full pl-3 pr-12 py-2.5 bg-slate-50 border border-slate-200 text-slate-800 text-base font-mono font-bold focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
             <button type="button" onclick="buscarFichaFamiliar()" title="Consultar Ficha Familiar"
-              class="absolute right-1 top-1 bottom-1 px-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-lg flex items-center justify-center transition shadow-sm">
+              class="absolute right-1 top-1 bottom-1 px-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-lg flex items-center justify-center transition shadow-sm no-print">
               <i data-lucide="search" class="w-4 h-4"></i>
             </button>
           </div>
@@ -92,7 +154,7 @@
             <input type="text" id="georeferencia" name="georeferencia" readonly placeholder="-9.XXXXX, -75.XXXXX"
               class="flex-1 px-3 py-2.5 border border-slate-200 bg-slate-100/70 rounded-xl outline-none text-slate-600 font-mono text-xs font-semibold">
             
-            <div class="flex gap-2">
+            <div class="flex gap-2 no-print">
               <button type="button" onclick="obtenerGeolocalizacion()"
                 class="flex-1 sm:flex-none px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition shadow-sm">
                 <i data-lucide="map-pin" class="w-4 h-4"></i> Capturar GPS
@@ -110,7 +172,7 @@
       <!-- SECTOR, REF DIRECCIÓN Y MZ PARA LA FAMILIA -->
       <div class="bg-slate-50/80 p-3.5 sm:p-4 rounded-xl border border-slate-200/60 space-y-3">
         <span class="text-[11px] font-extrabold text-blue-900 uppercase tracking-wider flex items-center gap-1.5">
-          <i data-lucide="map" class="w-4 h-4 text-blue-600"></i> Asignación Masiva de Dirección
+          <i data-lucide="map" class="w-4 h-4 text-blue-600 no-print"></i> Asignación Masiva de Dirección
         </span>
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
@@ -121,7 +183,7 @@
                 onclick="abrirModalSectores('sector_masivo')"
                 class="w-full pl-3 pr-10 py-2 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none uppercase bg-white cursor-pointer select-none shadow-sm">
               <button type="button" onclick="abrirModalSectores('sector_masivo')" title="Buscar Sector Registrado"
-                class="absolute right-1 top-1 bottom-1 px-2.5 bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-600 rounded-lg transition flex items-center justify-center border border-slate-200">
+                class="absolute right-1 top-1 bottom-1 px-2.5 bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-600 rounded-lg transition flex items-center justify-center border border-slate-200 no-print">
                 <i data-lucide="search" class="w-4 h-4"></i>
               </button>
             </div>
@@ -141,7 +203,7 @@
           </div>
         </div>
 
-        <div class="flex justify-end pt-1">
+        <div class="flex justify-end pt-1 no-print">
           <button type="button" id="btnDireccionTodos" onclick="actualizarDireccionTodosIntegrantes()"
             class="w-full sm:w-auto px-4 py-2 bg-blue-800 hover:bg-blue-900 active:scale-95 text-white rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition shadow-sm">
             <i data-lucide="check-check" class="w-4 h-4"></i> Asignar Sector, Ref y Mz a Todos los DNI
@@ -150,7 +212,40 @@
       </div>
     </div>
 
-    <!-- PASO 2: LISTADO DE INTEGRANTES CON EXPORTACIÓN Y OPCIÓN DE DESVINCULAR -->
+    <!-- CUADRO CONSOLIDADO ETARIO MINSA -->
+    <div class="glass-card rounded-2xl shadow-sm border border-slate-200/80 p-4 space-y-3">
+      <h3 class="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-2">
+        <i data-lucide="pie-chart" class="w-4 h-4 text-indigo-600 no-print"></i> Consolidado del Grupo Familiar por Curso de Vida
+      </h3>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-center">
+        <div class="p-2 bg-blue-50 rounded-xl border border-blue-100">
+          <span class="block text-[10px] font-bold text-blue-700 uppercase">Niños (<12a)</span>
+          <span id="cantNinos" class="text-base font-extrabold text-blue-900 font-mono">0</span>
+        </div>
+        <div class="p-2 bg-teal-50 rounded-xl border border-teal-100">
+          <span class="block text-[10px] font-bold text-teal-700 uppercase">Adolescentes (12-17a)</span>
+          <span id="cantAdolescentes" class="text-base font-extrabold text-teal-900 font-mono">0</span>
+        </div>
+        <div class="p-2 bg-indigo-50 rounded-xl border border-indigo-100">
+          <span class="block text-[10px] font-bold text-indigo-700 uppercase">Jóvenes (18-29a)</span>
+          <span id="cantJovenes" class="text-base font-extrabold text-indigo-900 font-mono">0</span>
+        </div>
+        <div class="p-2 bg-emerald-50 rounded-xl border border-emerald-100">
+          <span class="block text-[10px] font-bold text-emerald-700 uppercase">Adultos (30-59a)</span>
+          <span id="cantAdultos" class="text-base font-extrabold text-emerald-900 font-mono">0</span>
+        </div>
+        <div class="p-2 bg-purple-50 rounded-xl border border-purple-100">
+          <span class="block text-[10px] font-bold text-purple-700 uppercase">Adulto Mayor (60a+)</span>
+          <span id="cantAncianos" class="text-base font-extrabold text-purple-900 font-mono">0</span>
+        </div>
+        <div class="p-2 bg-slate-100 rounded-xl border border-slate-200">
+          <span class="block text-[10px] font-bold text-slate-700 uppercase">Total Integrantes</span>
+          <span id="cantTotal" class="text-base font-extrabold text-slate-900 font-mono">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASO 2: LISTADO DE INTEGRANTES -->
     <div id="seccionIntegrantes" class="glass-card rounded-2xl shadow-sm border border-slate-200/80 p-4 sm:p-6 space-y-5">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-slate-100 pb-3">
         <h2 class="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
@@ -158,7 +253,6 @@
           Integrantes del Grupo Familiar
         </h2>
         
-        <!-- BOTONES DE EXPORTACIÓN Y NUEVO INTEGRANTE -->
         <div class="flex flex-wrap gap-2 w-full md:w-auto no-print">
           <button type="button" onclick="exportarExcel()" 
             class="flex-1 md:flex-none px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-95 shadow-sm">
@@ -167,7 +261,7 @@
           
           <button type="button" onclick="exportarPDF()" 
             class="flex-1 md:flex-none px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-95 shadow-sm">
-            <i data-lucide="file-text" class="w-4 h-4"></i> PDF
+            <i data-lucide="file-text" class="w-4 h-4"></i> PDF / Imprimir
           </button>
 
           <button type="button" onclick="prepararFormularioNuevo()" 
@@ -177,29 +271,30 @@
         </div>
       </div>
 
-      <!-- TABLA ADAPTATIVA -->
+      <!-- TABLA ADAPTATIVA CON OCULTAMIENTO INTELIGENTE EN IMPRESIÓN -->
       <div class="overflow-x-auto rounded-xl border border-slate-200">
-        <table class="w-full text-[11px] text-left border-collapse min-w-[950px]">
+        <table class="w-full text-[11px] text-left border-collapse min-w-[950px] sm:min-w-full">
           <thead>
             <tr class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 uppercase tracking-wider">
-              <th class="p-2.5 border-r">Fila</th>
-              <th class="p-2.5 border-r">DNI</th>
-              <th class="p-2.5 border-r">Apellidos y Nombres</th>
-              <th class="p-2.5 border-r">F. Nac</th>
-              <th class="p-2.5 border-r">Sexo</th>
-              <th class="p-2.5 border-r">HC</th>
-              <th class="p-2.5 border-r">Teléfono</th>
-              <th class="p-2.5 border-r">Est. Civil</th>
-              <th class="p-2.5 border-r">Sector</th>
-              <th class="p-2.5 border-r">Ref. Direc</th>
-              <th class="p-2.5 border-r">Mz</th>
-              <th class="p-2.5 border-r">GPS</th>
-              <th class="p-2.5 text-center no-print">Acciones</th>
+              <th class="p-2 border-r">Fila</th>
+              <th class="p-2 border-r">DNI</th>
+              <th class="p-2 border-r">Apellidos y Nombres</th>
+              <th class="p-2 border-r">F. Nac</th>
+              <th class="p-2 border-r text-center">Edad</th>
+              <th class="p-2 border-r text-center">Sexo</th>
+              <th class="p-2 border-r">HC</th>
+              <th class="p-2 border-r">Teléfono</th>
+              <th class="p-2 border-r">Est. Civil</th>
+              <th class="p-2 border-r col-repeat-print">Sector</th>
+              <th class="p-2 border-r col-repeat-print">Ref. Direc</th>
+              <th class="p-2 border-r text-center col-repeat-print">Mz</th>
+              <th class="p-2 border-r col-repeat-print">GPS</th>
+              <th class="p-2 text-center no-print">Acciones</th>
             </tr>
           </thead>
           <tbody id="tablaIntegrantesBody" class="divide-y divide-slate-200">
             <tr>
-              <td colspan="13" class="p-6 text-center text-slate-400 font-medium text-xs">
+              <td colspan="14" class="p-6 text-center text-slate-400 font-medium text-xs">
                 Ingresa y consulta una Ficha Familiar para visualizar todos sus datos.
               </td>
             </tr>
@@ -207,7 +302,7 @@
         </table>
       </div>
 
-      <!-- FORMULARIO DE INTEGRANTE DETALLADO -->
+      <!-- FORMULARIO DE INTEGRANTE DETALLADO (NO PRINT) -->
       <form id="formCenso" class="bg-gradient-to-b from-slate-50 to-white p-4 sm:p-5 rounded-2xl border border-slate-200 space-y-4 shadow-sm no-print">
         <input type="hidden" id="row" name="row" value="" />
         
@@ -219,7 +314,6 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5">
-          <!-- BÚSQUEDA POR DNI -->
           <div>
             <label for="dni" class="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1">
               DNI<span class="text-red-500">*</span>
@@ -235,7 +329,6 @@
             </div>
           </div>
 
-          <!-- FICHA FAMILIAR ASOCIADA (LECTURA EXCLUSIVA AL CONSULTAR DNI) -->
           <div>
             <label for="ficha_integrante_read" class="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1">
               Ficha Familiar <span class="text-[9px] text-blue-600 font-normal">(Encontrada)</span>
@@ -327,7 +420,33 @@
     </div>
   </main>
 
-  <!-- MODAL DE BÚSQUEDA DE SECTORES RESTRINGIDO -->
+  <!-- MODAL DE CONFIRMACIÓN ELEGANTE PARA DESVINCULAR (NO PRINT) -->
+  <div id="modalConfirmDesvincular" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+      <div class="p-5 text-center space-y-3">
+        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600">
+          <i data-lucide="user-minus" class="w-6 h-6"></i>
+        </div>
+        <h3 class="text-base font-extrabold text-slate-800">¿Quitar Integrante de la Ficha?</h3>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          ¿Está seguro de quitar a <strong id="modalNombrePersona" class="text-slate-900"></strong> (DNI: <span id="modalDniPersona" class="font-mono font-bold"></span>) de este grupo familiar?
+        </p>
+        <div class="p-2.5 bg-amber-50 rounded-xl border border-amber-200/60 text-[11px] text-amber-800 font-medium">
+          ℹ️ Los datos de la persona <strong>NO se eliminarán</strong> de la base de datos general.
+        </div>
+      </div>
+      <div class="p-3.5 bg-slate-50 border-t border-slate-100 flex gap-2 justify-end">
+        <button type="button" onclick="cerrarModalDesvincular()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 active:scale-95 text-slate-700 font-bold text-xs rounded-xl transition">
+          Cancelar
+        </button>
+        <button type="button" id="btnConfirmarQuitar" class="px-5 py-2 bg-red-600 hover:bg-red-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-1">
+          <i data-lucide="check" class="w-4 h-4"></i> Confirmar y Quitar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE BÚSQUEDA DE SECTORES (NO PRINT) -->
   <div id="modalSectores" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 no-print">
     <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh] transition-all">
       <div class="p-4 bg-gradient-to-r from-blue-700 to-indigo-700 text-white flex justify-between items-center">
@@ -359,12 +478,17 @@
 
     const URL_CENSO = "https://script.google.com/macros/s/AKfycbz-PaNW15W43wBS8AmlEHfFe4QrUnITK-8yEnvwoGUnpw7PdbpNvJhPCc4q5qDs8c3WWg/exec";
     let listaIntegrantes = [];
+    let dniParaDesvincular = null;
 
     function actualizarRelojYFecha() {
       const ahora = new Date();
       const opcionesFecha = { day: '2-digit', month: '2-digit', year: 'numeric' };
-      document.getElementById('liveDate').textContent = ahora.toLocaleDateString('es-PE', opcionesFecha);
+      const fechaTxt = ahora.toLocaleDateString('es-PE', opcionesFecha);
+      document.getElementById('liveDate').textContent = fechaTxt;
       document.getElementById('liveClock').textContent = ahora.toLocaleTimeString('es-PE', { hour12: false });
+      
+      const printDates = document.querySelectorAll('.print-date');
+      printDates.forEach(el => el.textContent = fechaTxt);
     }
     setInterval(actualizarRelojYFecha, 1000);
     actualizarRelojYFecha();
@@ -444,6 +568,18 @@
       cerrarModalSectores();
     }
 
+    function nuevaConsultaFicha() {
+      document.getElementById('ffamiliar').value = "";
+      document.getElementById('georeferencia').value = "";
+      document.getElementById('sector_masivo').value = "";
+      document.getElementById('ref_direccion_masivo').value = "";
+      document.getElementById('mz_masivo').value = "";
+      listaIntegrantes = [];
+      renderizarTablaIntegrantes();
+      limpiarFormularioPersona();
+      mostrarAlerta("ℹ️ Formulario listo para una nueva consulta.", "bg-blue-50 text-blue-900 border-blue-200");
+    }
+
     async function buscarFichaFamiliar() {
       let ffamiliarVal = document.getElementById('ffamiliar').value.trim();
       if (!/^\d{1,7}$/.test(ffamiliarVal)) {
@@ -490,6 +626,47 @@
         console.error("Error al consultar:", error);
         mostrarAlerta("❌ Error al conectar con Google Sheets.", "bg-red-50 text-red-900 border-red-200");
       }
+    }
+
+    function calcularEdadExacta(fechaStr) {
+      if (!fechaStr) return null;
+      let d;
+      if (fechaStr.includes('/')) {
+        const p = fechaStr.split('/');
+        if (p.length === 3) d = new Date(p[2], p[1] - 1, p[0]);
+      } else if (fechaStr.includes('-')) {
+        const p = fechaStr.split('-');
+        if (p.length === 3) d = new Date(p[0], p[1] - 1, p[2]);
+      }
+      if (!d || isNaN(d.getTime())) return null;
+
+      const hoy = new Date();
+      let edad = hoy.getFullYear() - d.getFullYear();
+      const m = hoy.getMonth() - d.getMonth();
+      if (m < 0 || (m === 0 && hoy.getDate() < d.getDate())) edad--;
+      return edad >= 0 ? edad : null;
+    }
+
+    function actualizarConsolidadoEtario() {
+      let ninos = 0, adolescentes = 0, jovenes = 0, adultos = 0, ancianos = 0;
+
+      listaIntegrantes.forEach(p => {
+        const edad = calcularEdadExacta(p.fn);
+        if (edad !== null) {
+          if (edad < 12) ninos++;
+          else if (edad >= 12 && edad <= 17) adolescentes++;
+          else if (edad >= 18 && edad <= 29) jovenes++;
+          else if (edad >= 30 && edad <= 59) adultos++;
+          else if (edad >= 60) ancianos++;
+        }
+      });
+
+      document.getElementById('cantNinos').textContent = ninos;
+      document.getElementById('cantAdolescentes').textContent = adolescentes;
+      document.getElementById('cantJovenes').textContent = jovenes;
+      document.getElementById('cantAdultos').textContent = adultos;
+      document.getElementById('cantAncianos').textContent = ancianos;
+      document.getElementById('cantTotal').textContent = listaIntegrantes.length;
     }
 
     function evaluarConsultaDNI(val) {
@@ -563,20 +740,34 @@
       }
     }
 
-    async function desvincularIntegrante(dni, nombre) {
-      if (!confirm(`¿Está seguro de quitar a "${nombre}" (DNI: ${dni}) de este grupo familiar?\n\nLos datos del integrante NO se eliminarán de la base de datos.`)) {
-        return;
-      }
+    // ABRIR MODAL ELEGANTE PARA DESVINCULAR INTEGRANTE
+    function abrirModalDesvincular(dni, nombre) {
+      dniParaDesvincular = dni;
+      document.getElementById('modalNombrePersona').textContent = nombre;
+      document.getElementById('modalDniPersona').textContent = dni;
+      document.getElementById('modalConfirmDesvincular').classList.remove('hidden');
+    }
 
-      mostrarAlerta(`⏳ Desvinculando a ${nombre}...`, "bg-amber-50 text-amber-900 border-amber-200");
+    function cerrarModalDesvincular() {
+      dniParaDesvincular = null;
+      document.getElementById('modalConfirmDesvincular').classList.add('hidden');
+    }
+
+    document.getElementById('btnConfirmarQuitar').addEventListener('click', async function() {
+      if (!dniParaDesvincular) return;
+
+      const dni = dniParaDesvincular;
+      cerrarModalDesvincular();
+
+      const persona = listaIntegrantes.find(p => String(p.dni).trim() === String(dni).trim());
+      if (!persona) return;
+
+      mostrarAlerta(`⏳ Desvinculando a ${persona.nombreB}...`, "bg-amber-50 text-amber-900 border-amber-200");
 
       try {
-        const persona = listaIntegrantes.find(p => String(p.dni).trim() === String(dni).trim());
-        if (!persona) return;
-
         const formData = {
           row: persona.row,
-          ffamiliar: "0000000", // Ficha neutra/libre sin borrar sus datos
+          ffamiliar: "0000000",
           georeferencia: persona.georeferencia || "",
           dni: persona.dni,
           nombreB: persona.nombreB,
@@ -598,14 +789,14 @@
         });
 
         const textResult = await response.text();
-        mostrarAlerta(`✅ ${nombre} fue desvinculado con éxito de esta ficha. Sus datos permanecen seguros.`, "bg-emerald-50 text-emerald-900 border-emerald-200");
+        mostrarAlerta(`✅ ${persona.nombreB} fue desvinculado con éxito de esta ficha. Sus datos permanecen seguros.`, "bg-emerald-50 text-emerald-900 border-emerald-200");
         
         await buscarFichaFamiliar();
       } catch (error) {
         console.error("Error al desvincular:", error);
         mostrarAlerta("❌ Ocurrió un error al intentar desvincular al integrante.", "bg-red-50 text-red-900 border-red-200");
       }
-    }
+    });
 
     async function actualizarDireccionTodosIntegrantes() {
       let ffamiliarVal = document.getElementById('ffamiliar').value.trim();
@@ -688,35 +879,40 @@
       if (listaIntegrantes.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="13" class="p-6 text-center text-slate-400 font-medium text-xs">
+            <td colspan="14" class="p-6 text-center text-slate-400 font-medium text-xs">
               No hay miembros registrados en esta Ficha Familiar.
             </td>
           </tr>`;
+        actualizarConsolidadoEtario();
         return;
       }
 
       listaIntegrantes.forEach((item) => {
+        const edadVal = calcularEdadExacta(item.fn);
+        const edadTexto = edadVal !== null ? `${edadVal} a` : '-';
+
         const tr = document.createElement('tr');
         tr.className = "hover:bg-blue-50/50 transition font-mono text-[11px]";
         tr.innerHTML = `
-          <td class="p-2.5 border-r font-bold text-slate-500 text-center">${item.row || '-'}</td>
-          <td class="p-2.5 border-r font-bold text-slate-900">${item.dni || ''}</td>
-          <td class="p-2.5 border-r font-sans font-bold uppercase text-slate-800">${item.nombreB || ''}</td>
-          <td class="p-2.5 border-r font-sans text-slate-600">${item.fn || ''}</td>
-          <td class="p-2.5 border-r text-center font-bold text-slate-700">${item.sexo || ''}</td>
-          <td class="p-2.5 border-r font-sans text-slate-600">${item.hclinica || ''}</td>
-          <td class="p-2.5 border-r font-sans text-slate-600">${item.telefono || ''}</td>
-          <td class="p-2.5 border-r font-sans text-slate-600">${item.estado_civil || ''}</td>
-          <td class="p-2.5 border-r font-sans text-slate-600">${item.sector || ''}</td>
-          <td class="p-2.5 border-r font-sans text-slate-600">${item.ref_direccion || ''}</td>
-          <td class="p-2.5 border-r font-sans font-bold text-blue-900">${item.mz || ''}</td>
-          <td class="p-2.5 border-r text-[10px] font-bold text-indigo-600">${item.georeferencia || ''}</td>
-          <td class="p-2.5 text-center font-sans no-print flex justify-center gap-1">
+          <td class="p-2 border-r font-bold text-slate-500 text-center">${item.row || '-'}</td>
+          <td class="p-2 border-r font-bold text-slate-900">${item.dni || ''}</td>
+          <td class="p-2 border-r font-sans font-bold uppercase text-slate-800">${item.nombreB || ''}</td>
+          <td class="p-2 border-r font-sans text-slate-600">${item.fn || ''}</td>
+          <td class="p-2 border-r text-center font-bold text-indigo-700 font-sans">${edadTexto}</td>
+          <td class="p-2 border-r text-center font-bold text-slate-700">${item.sexo || ''}</td>
+          <td class="p-2 border-r font-sans text-slate-600">${item.hclinica || ''}</td>
+          <td class="p-2 border-r font-sans text-slate-600">${item.telefono || ''}</td>
+          <td class="p-2 border-r font-sans text-slate-600">${item.estado_civil || ''}</td>
+          <td class="p-2 border-r font-sans text-slate-600 col-repeat-print">${item.sector || ''}</td>
+          <td class="p-2 border-r font-sans text-slate-600 col-repeat-print">${item.ref_direccion || ''}</td>
+          <td class="p-2 border-r font-sans font-bold text-blue-900 text-center col-repeat-print">${item.mz || ''}</td>
+          <td class="p-2 border-r text-[10px] font-bold text-indigo-600 col-repeat-print">${item.georeferencia || ''}</td>
+          <td class="p-2 text-center font-sans no-print flex justify-center gap-1">
             <button onclick="cargarPersonaEnFormulario('${item.dni}')" 
               class="px-2 py-1 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white rounded-lg font-bold text-[10px] shadow-sm transition" title="Editar Integrante">
               Editar
             </button>
-            <button onclick="desvincularIntegrante('${item.dni}', '${item.nombreB.replace(/'/g, "\\'")}')" 
+            <button onclick="abrirModalDesvincular('${item.dni}', '${item.nombreB.replace(/'/g, "\\'")}')" 
               class="px-2 py-1 bg-red-100 hover:bg-red-200 active:scale-95 text-red-700 rounded-lg font-bold text-[10px] border border-red-200 transition" title="Quitar de este grupo sin borrar datos">
               Quitar
             </button>
@@ -724,6 +920,8 @@
         `;
         tbody.appendChild(tr);
       });
+
+      actualizarConsolidadoEtario();
     }
 
     function cargarPersonaEnFormulario(dni) {
@@ -771,7 +969,6 @@
       if (document.getElementById('mz_masivo').value) document.getElementById('mz').value = document.getElementById('mz_masivo').value;
     }
 
-    // EXPORTAR A EXCEL (.XLSX)
     function exportarExcel() {
       const ffam = document.getElementById('ffamiliar').value.trim();
       if (!ffam || listaIntegrantes.length === 0) {
@@ -784,6 +981,7 @@
         "DNI": item.dni,
         "Apellidos y Nombres": item.nombreB,
         "Fecha Nacimiento": item.fn,
+        "Edad": calcularEdadExacta(item.fn) !== null ? calcularEdadExacta(item.fn) : "",
         "Sexo": item.sexo,
         "HC": item.hclinica,
         "Teléfono": item.telefono,
@@ -800,7 +998,6 @@
       XLSX.writeFile(workbook, `Ficha_Familiar_${ffam}.xlsx`);
     }
 
-    // EXPORTAR A PDF (FORMATO DE IMPRESIÓN OFICIAL)
     function exportarPDF() {
       const ffam = document.getElementById('ffamiliar').value.trim();
       if (!ffam || listaIntegrantes.length === 0) {
