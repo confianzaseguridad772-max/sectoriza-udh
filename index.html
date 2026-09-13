@@ -178,15 +178,13 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <!-- CAMPO NUEVO: FICHA FAMILIAR EN FORMULARIO -->
+          <!-- CAMPO NUEVO: MOSTRAR NÚMERO DE FICHA FAMILIAR CONSULTADA -->
           <div>
             <label for="form_ffamiliar" class="block text-xs font-bold text-slate-700 uppercase mb-1">
-              Ficha Familiar<span class="text-red-500">*</span>
+              Ficha Familiar
             </label>
-            <input type="text" id="form_ffamiliar" name="form_ffamiliar" required pattern="[0-9]{1,7}" maxlength="7"
-              placeholder="Nº Ficha"
-              oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono font-bold text-blue-800">
+            <input type="text" id="form_ffamiliar" readonly placeholder="---"
+              class="w-full px-3 py-2 border border-blue-200 bg-blue-50/70 text-blue-900 rounded-lg outline-none font-mono font-bold text-sm">
           </div>
 
           <!-- BÚSQUEDA AUTOMÁTICA POR DNI -->
@@ -322,7 +320,7 @@
     const URL_CENSO = "https://script.google.com/macros/s/AKfycbz-PaNW15W43wBS8AmlEHfFe4QrUnITK-8yEnvwoGUnpw7PdbpNvJhPCc4q5qDs8c3WWg/exec";
     let listaIntegrantes = [];
 
-    // ARRAY ARRAY OFICIAL Y ÚNICO DE SECTORES RESTRINGIDOS
+    // ARRAY OFICIAL Y ÚNICO DE SECTORES RESTRINGIDOS
     const SECTORES_VALIDOS = [
       "933-AA.VV. 25 DE ENERO",
       "933-AA.VV. CARMEN GARAY",
@@ -383,7 +381,6 @@
       "933-COMUNIDAD VENADO PAMPA",
       "933-COMUNIDAD YURIMAGUAS",
       "933-SIN SECTOR"
-      "933-OTRO DISTRITO"
     ];
 
     let idInputSectorDestino = '';
@@ -450,7 +447,7 @@
 
       const ffamiliar = String(ffamiliarVal).padStart(7, '0');
       document.getElementById('ffamiliar').value = ffamiliar;
-      document.getElementById('form_ffamiliar').value = ffamiliar;
+      document.getElementById('form_ffamiliar').value = ffamiliar; // Sincroniza campo del formulario
 
       mostrarAlerta("🔍 Buscando grupo familiar...", "bg-blue-100 text-blue-800 border-blue-300");
 
@@ -519,16 +516,15 @@
 
         if (data && data.status === "ok") {
           document.getElementById('row').value = data.row || "";
-          
-          // MOSTRAR FICHA FAMILIAR EN EL FORMULARIO Y EN LA SECCIÓN PRINCIPAL
-          if (data.ffamiliar) {
-            const ffPadded = String(data.ffamiliar).padStart(7, '0');
-            document.getElementById('form_ffamiliar').value = ffPadded;
-            document.getElementById('ffamiliar').value = ffPadded;
-          }
-
           document.getElementById('nombreB').value = data.nombreB || "";
           
+          // Mostrar y sincronizar el número de Ficha Familiar recuperado
+          if (data.ffamiliar) {
+            const ffPad = String(data.ffamiliar).padStart(7, '0');
+            document.getElementById('form_ffamiliar').value = ffPad;
+            document.getElementById('ffamiliar').value = ffPad;
+          }
+
           if (data.fn) {
             const partes = data.fn.split('/');
             document.getElementById('fn').value = partes.length === 3 ? `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}` : data.fn;
@@ -547,7 +543,7 @@
           document.getElementById('badgeEstado').textContent = `DNI EXISTENTE (FILA ${data.row})`;
           document.getElementById('badgeEstado').className = "text-[10px] bg-amber-200 text-amber-800 px-2 py-0.5 rounded font-mono font-bold";
 
-          mostrarAlerta(`✅ Se encontraron datos del DNI ${dni} en el Censo (Fila ${data.row}). Puedes modificarlos y guardarlos.`, "bg-green-100 text-green-800 border-green-300");
+          mostrarAlerta(`✅ Se encontraron datos del DNI ${dni} en la Ficha Familiar ${data.ffamiliar || ''} (Fila ${data.row}). Puedes modificarlos y guardarlos.`, "bg-green-100 text-green-800 border-green-300");
         } else {
           // DNI INEXISTENTE: Limpia los datos personales manteniendo la dirección masiva por defecto
           document.getElementById('row').value = "";
@@ -557,6 +553,9 @@
           document.getElementById('hclinica').value = "";
           document.getElementById('telefono').value = "";
           document.getElementById('estado_civil').value = "";
+
+          // Mantiene Ficha Familiar actual del selector masivo
+          document.getElementById('form_ffamiliar').value = document.getElementById('ffamiliar').value || "";
 
           // Asignar por defecto la dirección de la sección masiva si existe
           document.getElementById('sector').value = document.getElementById('sector_masivo').value || "";
@@ -696,8 +695,8 @@
       if (!persona) return;
 
       document.getElementById('row').value = persona.row || "";
-      document.getElementById('form_ffamiliar').value = persona.ffamiliar || document.getElementById('ffamiliar').value || "";
       document.getElementById('dni').value = persona.dni || "";
+      document.getElementById('form_ffamiliar').value = document.getElementById('ffamiliar').value || "";
       document.getElementById('nombreB').value = persona.nombreB || "";
       
       if (persona.fn) {
@@ -736,12 +735,12 @@
     document.getElementById('formCenso').addEventListener('submit', async function(e) {
       e.preventDefault();
 
-      let ffamiliarVal = document.getElementById('form_ffamiliar').value.trim() || document.getElementById('ffamiliar').value.trim();
+      let ffamiliarVal = document.getElementById('ffamiliar').value.trim() || document.getElementById('form_ffamiliar').value.trim();
       const georeferencia = document.getElementById('georeferencia').value.trim();
       const sectorVal = document.getElementById('sector').value.trim();
 
       if (!ffamiliarVal) {
-        mostrarAlerta("❌ Debe ingresar una Ficha Familiar en el formulario o en la sección superior.", "bg-red-100 text-red-800 border-red-300");
+        mostrarAlerta("❌ Debe ingresar una Ficha Familiar en la sección superior.", "bg-red-100 text-red-800 border-red-300");
         return;
       }
 
@@ -752,7 +751,6 @@
       }
 
       const ffamiliarTexto = String(ffamiliarVal).padStart(7, '0');
-      document.getElementById('ffamiliar').value = ffamiliarTexto;
 
       const formData = {
         row: document.getElementById('row').value || null,
